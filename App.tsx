@@ -21,11 +21,17 @@ const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>(View.PROJECT_LIST);
   const [selectedQuestionnaire, setSelectedQuestionnaire] = useState<Questionnaire | null>(null);
 
-  const mockQuestionnaires: Questionnaire[] = [
+  const [questionnaires, setQuestionnaires] = useState<Questionnaire[]>([
     {
       id: '1',
       projectName: 'Global Brand Health 2024',
       name: 'Q3 Brand Tracker',
+      projectType: 'Brand Tracker',
+      targetSampleSize: 2500,
+      implementationStart: '2024-01-01',
+      implementationEnd: '2024-12-31',
+      fieldworkStart: '2024-07-01',
+      fieldworkEnd: '2024-07-21',
       version: 'v2.4',
       status: QuestionnaireStatus.DRAFT,
       lastUpdated: '2 hours ago',
@@ -57,23 +63,51 @@ const App: React.FC = () => {
       id: '2',
       projectName: 'Product Innovation X',
       name: 'Packaging Concept Test',
+      projectType: 'Concept Test',
+      targetSampleSize: 800,
+      implementationStart: '2024-05-15',
+      implementationEnd: '2024-06-30',
+      fieldworkStart: '2024-06-01',
+      fieldworkEnd: '2024-06-15',
       version: 'v1.0',
       status: QuestionnaireStatus.APPROVED,
       lastUpdated: '1 day ago',
       questions: [],
       blocks: []
     }
-  ];
+  ]);
 
   const handleOpenBuilder = (q: Questionnaire) => {
     setSelectedQuestionnaire(q);
     setCurrentView(View.BUILDER);
   };
 
+  const handleCreateNew = (data: Partial<Questionnaire>) => {
+    const newSurvey: Questionnaire = {
+      id: (questionnaires.length + 1).toString(),
+      projectName: data.projectName || 'New Project',
+      name: data.name || 'Untitled Survey',
+      description: data.description,
+      projectType: data.projectType || 'Ad-hoc',
+      targetSampleSize: data.targetSampleSize || 500,
+      implementationStart: data.implementationStart || '',
+      implementationEnd: data.implementationEnd || '',
+      fieldworkStart: data.fieldworkStart || '',
+      fieldworkEnd: data.fieldworkEnd || '',
+      version: 'v1.0',
+      status: QuestionnaireStatus.DRAFT,
+      lastUpdated: 'Just now',
+      questions: [],
+      blocks: [],
+    };
+    setQuestionnaires([...questionnaires, newSurvey]);
+    handleOpenBuilder(newSurvey);
+  };
+
   const renderView = () => {
     switch (currentView) {
       case View.PROJECT_LIST:
-        return <ProjectList questionnaires={mockQuestionnaires} onOpen={handleOpenBuilder} />;
+        return <ProjectList questionnaires={questionnaires} onOpen={handleOpenBuilder} onCreate={handleCreateNew} />;
       case View.BUILDER:
         return selectedQuestionnaire ? (
           <Builder questionnaire={selectedQuestionnaire} />

@@ -97,11 +97,11 @@ export interface Question {
   id: string;
   type: QuestionType;
   text: string;
-  interviewerNote?: string; // Added for interviewer notes or additional explanations
+  interviewerNote?: string; 
   image?: string; 
   hasStimulus?: boolean;
   options?: string[];
-  secondaryOptions?: string[]; // For Side-by-Side secondary columns
+  secondaryOptions?: string[]; 
   gridRows?: string[]; 
   optionRecodes?: string[]; 
   optionImages?: string[]; 
@@ -119,7 +119,7 @@ export interface Question {
   validation?: {
     min?: number;
     max?: number;
-    sumTo?: number; // For Constant Sum
+    sumTo?: number; 
     charLimit?: number;
   };
 }
@@ -135,6 +135,13 @@ export interface Questionnaire {
   id: string;
   projectName: string;
   name: string;
+  description?: string;
+  projectType: string;
+  targetSampleSize: number;
+  implementationStart: string;
+  implementationEnd: string;
+  fieldworkStart: string;
+  fieldworkEnd: string;
   version: string;
   status: QuestionnaireStatus;
   lastUpdated: string;
