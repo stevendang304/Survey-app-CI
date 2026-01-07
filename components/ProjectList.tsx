@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Plus, Copy, Search, Filter, MoreHorizontal, ExternalLink, Clock, FileText, ChevronRight, X, Calendar, Users, Briefcase, Info } from 'lucide-react';
+import { Plus, Copy, Search, Filter, MoreHorizontal, ExternalLink, Clock, FileText, ChevronRight, X, Calendar, Users, Briefcase, Info, Key as KeyIcon } from 'lucide-react';
 import { Questionnaire, QuestionnaireStatus } from '../types';
 
 interface ProjectListProps {
@@ -30,6 +30,7 @@ const PROJECT_TYPES = [
 export const ProjectList: React.FC<ProjectListProps> = ({ questionnaires, onOpen, onCreate }) => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [formData, setFormData] = useState<Partial<Questionnaire>>({
+    clientKey: '',
     projectName: '',
     name: '',
     description: '',
@@ -47,6 +48,7 @@ export const ProjectList: React.FC<ProjectListProps> = ({ questionnaires, onOpen
     setIsCreateModalOpen(false);
     // Reset form
     setFormData({
+      clientKey: '',
       projectName: '',
       name: '',
       description: '',
@@ -84,7 +86,20 @@ export const ProjectList: React.FC<ProjectListProps> = ({ questionnaires, onOpen
                 <h4 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
                   <Briefcase className="w-4 h-4" /> 01. Project Identity
                 </h4>
-                <div className="grid grid-cols-2 gap-8">
+                
+                {/* NEW KEY FIELD AS PER SCREENSHOT */}
+                <div className="space-y-2 max-w-sm">
+                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Key</label>
+                  <input 
+                    type="text" 
+                    placeholder="CLIENT_KEY..."
+                    value={formData.clientKey}
+                    onChange={e => setFormData({ ...formData, clientKey: e.target.value })}
+                    className="w-full px-6 py-4 bg-slate-50 border-2 border-slate-100 rounded-2xl text-sm font-bold focus:border-blue-600 focus:bg-white transition-all outline-none placeholder:text-slate-300"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-8 pt-2">
                   <div className="space-y-2">
                     <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Project Parent Name</label>
                     <input 
@@ -265,6 +280,12 @@ export const ProjectList: React.FC<ProjectListProps> = ({ questionnaires, onOpen
                         <span className="text-sm font-bold text-slate-900 group-hover:text-blue-600 transition-colors">{q.projectName}</span>
                         <div className="flex items-center gap-2 mt-1">
                           <span className="text-[10px] text-slate-400 font-bold uppercase tracking-tighter">ID: PRJ-{q.id.padStart(4, '0')}</span>
+                          {q.clientKey && (
+                            <>
+                              <span className="w-1 h-1 bg-slate-300 rounded-full" />
+                              <span className="text-[10px] text-indigo-500 font-bold uppercase tracking-widest">KEY: {q.clientKey}</span>
+                            </>
+                          )}
                           <span className="w-1 h-1 bg-slate-300 rounded-full" />
                           <span className="text-[10px] text-blue-500 font-black uppercase tracking-widest">{q.projectType}</span>
                         </div>

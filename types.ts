@@ -133,6 +133,7 @@ export interface QuestionBlock {
 
 export interface Questionnaire {
   id: string;
+  clientKey: string;
   projectName: string;
   name: string;
   description?: string;

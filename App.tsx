@@ -24,6 +24,7 @@ const App: React.FC = () => {
   const [questionnaires, setQuestionnaires] = useState<Questionnaire[]>([
     {
       id: '1',
+      clientKey: 'GBH-2024-INTL',
       projectName: 'Global Brand Health 2024',
       name: 'Q3 Brand Tracker',
       projectType: 'Brand Tracker',
@@ -61,6 +62,7 @@ const App: React.FC = () => {
     },
     {
       id: '2',
+      clientKey: 'PACK-TEST-X',
       projectName: 'Product Innovation X',
       name: 'Packaging Concept Test',
       projectType: 'Concept Test',
@@ -85,6 +87,7 @@ const App: React.FC = () => {
   const handleCreateNew = (data: Partial<Questionnaire>) => {
     const newSurvey: Questionnaire = {
       id: (questionnaires.length + 1).toString(),
+      clientKey: data.clientKey || 'NO_KEY',
       projectName: data.projectName || 'New Project',
       name: data.name || 'Untitled Survey',
       description: data.description,
