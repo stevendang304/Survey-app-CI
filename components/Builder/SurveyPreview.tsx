@@ -12,7 +12,8 @@ import {
   Lock,
   Workflow,
   EyeOff,
-  Variable
+  Variable,
+  Image as ImageIcon
 } from 'lucide-react';
 import { Question, QuestionType, LogicCondition, DisplayLogic, CarryForwardMode, BlockMode } from '../../types';
 
@@ -276,6 +277,7 @@ export const SurveyPreview: React.FC<SurveyPreviewProps> = ({ questions, onClose
           {currentQuestions.map((q) => {
             let baseOptions = [...(q.options || [])];
             let carriedOptions: string[] = [];
+            let carriedOptionImages: string[] = [];
 
             if (q.carryForward && q.carryForward.sourceQuestionId) {
               const sourceQ = questions.find(it => it.id === q.carryForward!.sourceQuestionId);
@@ -284,40 +286,59 @@ export const SurveyPreview: React.FC<SurveyPreviewProps> = ({ questions, onClose
               if (sourceQ && sourceQ.options) {
                 switch (q.carryForward.mode) {
                   case CarryForwardMode.SELECTED:
-                    carriedOptions = sourceQ.options.filter(opt => {
-                      if (Array.isArray(sourceResp)) return sourceResp.includes(opt);
-                      return sourceResp === opt;
+                    carriedOptions = sourceQ.options.filter((opt, idx) => {
+                      const isSel = Array.isArray(sourceResp) ? sourceResp.includes(opt) : sourceResp === opt;
+                      if (isSel && sourceQ.optionImages?.[idx]) {
+                        carriedOptionImages.push(sourceQ.optionImages[idx]);
+                      }
+                      return isSel;
                     });
                     break;
                   case CarryForwardMode.UNSELECTED:
-                    carriedOptions = sourceQ.options.filter(opt => {
-                      if (Array.isArray(sourceResp)) return !sourceResp.includes(opt);
-                      return sourceResp !== opt && sourceResp !== undefined;
+                    carriedOptions = sourceQ.options.filter((opt, idx) => {
+                      const isNotSel = Array.isArray(sourceResp) ? !sourceResp.includes(opt) : sourceResp !== opt && sourceResp !== undefined;
+                       if (isNotSel && sourceQ.optionImages?.[idx]) {
+                        carriedOptionImages.push(sourceQ.optionImages[idx]);
+                      }
+                      return isNotSel;
                     });
                     break;
                   case CarryForwardMode.ALL:
                   case CarryForwardMode.DISPLAYED:
                     carriedOptions = sourceQ.options;
+                    carriedOptionImages = sourceQ.optionImages || [];
                     break;
                 }
               }
             }
 
             const allPossibleOptions = [...baseOptions, ...carriedOptions];
-            const displayOptions = allPossibleOptions.filter(opt => {
+            const allOptionImages = [...(q.optionImages || []), ...carriedOptionImages];
+            
+            const displayIndices = allPossibleOptions.map((_, i) => i).filter(idx => {
+              const opt = allPossibleOptions[idx];
               const logic = q.optionDisplayLogic?.[opt];
               if (!logic || logic.conditions.length === 0) return true;
               return evaluateDisplayLogic(logic, responses);
             });
 
+            const hasAnyChoiceImages = allOptionImages.some(img => !!img);
+
             return (
               <div key={q.id} className="animate-in fade-in slide-in-from-bottom-2 duration-500">
-                <div className="space-y-6">
-                  <div className="space-y-2">
+                <div className="space-y-8">
+                  <div className="space-y-6">
                     <h2 
                       className="text-2xl md:text-3xl font-bold text-slate-900 leading-tight"
                       dangerouslySetInnerHTML={{ __html: resolvePipedText(q.text, responses) + (q.required ? ' <span class="text-red-500">*</span>' : '') }}
                     />
+                    
+                    {q.image && (
+                      <div className="relative inline-block">
+                        <img src={q.image} alt="Question Stimulus" className="max-w-full md:max-w-xl rounded-[40px] shadow-2xl border-4 border-white ring-1 ring-slate-100" />
+                      </div>
+                    )}
+
                     {q.interviewerNote && (
                       <div className="p-4 bg-blue-50/50 border border-blue-100 rounded-xl flex items-start gap-3">
                         <Info className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
@@ -358,19 +379,22 @@ export const SurveyPreview: React.FC<SurveyPreviewProps> = ({ questions, onClose
                     )}
 
                     {(q.type === QuestionType.SINGLE || q.type === QuestionType.MULTIPLE) && (
-                      <div className="grid grid-cols-1 gap-4">
-                        {displayOptions.map((opt, i) => {
+                      <div className={`grid gap-4 ${hasAnyChoiceImages ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'}`}>
+                        {displayIndices.map((idx) => {
+                          const opt = allPossibleOptions[idx];
+                          const optImg = allOptionImages[idx];
+                          
                           const isSelected = q.type === QuestionType.SINGLE 
                             ? responses[q.id] === opt 
                             : (responses[q.id] || []).includes(opt);
                           
-                          const isCarried = carriedOptions.includes(opt);
+                          const isCarried = idx >= (q.options?.length || 0);
                           const isBlocked = q.type === QuestionType.MULTIPLE && isChoiceBlocked(q, opt);
                           const isMutuallyExclusive = q.blockOptions?.some(b => b.sourceChoice === opt && b.mode === BlockMode.MUTUALLY_EXCLUSIVE);
 
                           return (
                             <button
-                              key={i}
+                              key={idx}
                               disabled={isBlocked}
                               onClick={() => {
                                 if (q.type === QuestionType.SINGLE) {
@@ -379,30 +403,39 @@ export const SurveyPreview: React.FC<SurveyPreviewProps> = ({ questions, onClose
                                   handleMultipleChoiceSelection(q, opt);
                                 }
                               }}
-                              className={`text-left rounded-2xl border-2 transition-all p-5 flex gap-4 items-center group relative ${
+                              className={`text-left rounded-[32px] border-2 transition-all group relative flex flex-col overflow-hidden ${
                                 isBlocked ? 'opacity-40 bg-slate-100 border-slate-200 cursor-not-allowed grayscale' :
-                                isSelected ? 'border-blue-600 bg-blue-50 shadow-md ring-4 ring-blue-600/5' : 'border-white bg-white hover:border-slate-200 shadow-sm'
+                                isSelected ? 'border-blue-600 bg-blue-50 shadow-xl ring-4 ring-blue-600/5' : 'border-white bg-white hover:border-slate-200 shadow-lg'
                               }`}
                             >
-                              <div className="flex-1 flex items-center gap-4">
-                                <div className={`w-6 h-6 border-2 shrink-0 flex items-center justify-center transition-colors ${
+                              {optImg && (
+                                <div className="h-48 overflow-hidden bg-slate-100 relative">
+                                  <img src={optImg} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                                  {isSelected && (
+                                    <div className="absolute inset-0 bg-blue-600/10 backdrop-blur-[1px]" />
+                                  )}
+                                </div>
+                              )}
+                              
+                              <div className="p-6 flex gap-4 items-start">
+                                <div className={`w-6 h-6 border-2 shrink-0 flex items-center justify-center transition-colors mt-0.5 ${
                                   isBlocked ? 'border-slate-300' :
                                   isSelected ? 'border-blue-600 bg-blue-600 text-white' : 'border-slate-200'
                                 } ${q.type === QuestionType.SINGLE ? 'rounded-full' : 'rounded-md'}`}>
                                   {isSelected && (<div className="w-2 h-2 bg-white rounded-full" />)}
                                 </div>
                                 <div className="flex flex-col overflow-hidden">
-                                  <span className={`text-lg font-medium truncate ${isSelected ? 'text-blue-900' : 'text-slate-700'}`}>{opt}</span>
+                                  <span className={`text-lg font-bold leading-tight ${isSelected ? 'text-blue-900' : 'text-slate-700'}`}>{opt}</span>
                                   
-                                  <div className="flex flex-wrap gap-2 mt-1">
+                                  <div className="flex flex-wrap gap-2 mt-2">
                                     {isCarried && (
-                                      <span className="text-[9px] text-indigo-500 font-bold flex items-center gap-1 uppercase tracking-widest bg-indigo-50 px-1.5 py-0.5 rounded">
-                                        <Variable className="w-2.5 h-2.5" /> Referenced
+                                      <span className="text-[9px] text-indigo-500 font-black flex items-center gap-1 uppercase tracking-widest bg-indigo-50 px-2 py-1 rounded-full shadow-sm border border-indigo-100">
+                                        <Variable className="w-3 h-3" /> Referenced
                                       </span>
                                     )}
                                     {isMutuallyExclusive && !isBlocked && (
-                                      <span className="text-[9px] text-red-500 font-bold flex items-center gap-1 uppercase tracking-widest bg-red-50 px-1.5 py-0.5 rounded">
-                                        <Ban className="w-2.5 h-2.5" /> Mutually Exclusive
+                                      <span className="text-[9px] text-red-500 font-black flex items-center gap-1 uppercase tracking-widest bg-red-50 px-2 py-1 rounded-full shadow-sm border border-red-100">
+                                        <Ban className="w-3 h-3" /> Exclusive
                                       </span>
                                     )}
                                   </div>

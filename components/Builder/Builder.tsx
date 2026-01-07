@@ -65,7 +65,9 @@ import {
   Calendar,
   FileText as FileIcon,
   GripVertical,
-  PlusCircle
+  PlusCircle,
+  Image as ImageIcon,
+  Upload
 } from 'lucide-react';
 import { Questionnaire, Question, QuestionType, QuestionBlock } from '../../types';
 import { LogicBuilder } from './LogicBuilder';
@@ -746,6 +748,13 @@ export const Builder: React.FC<BuilderProps> = ({ questionnaire: initialQ }) => 
                               >
                                 {renderVisualText(q.text)}
                               </div>
+
+                              {q.image && (
+                                <div className="mb-8 relative group/stim">
+                                  <img src={q.image} alt="Stimulus" className="max-w-md rounded-[32px] border-4 border-slate-100 shadow-xl" />
+                                  <div className="absolute top-4 left-4 bg-slate-900/80 text-white text-[9px] font-black uppercase px-3 py-1 rounded-full backdrop-blur-sm">Stimulus Asset</div>
+                                </div>
+                              )}
                               
                               {q.interviewerNote && (
                                 <div className="mb-8 p-4 bg-blue-50/50 border border-blue-100 rounded-xl flex items-start gap-3">
@@ -760,7 +769,14 @@ export const Builder: React.FC<BuilderProps> = ({ questionnaire: initialQ }) => 
                                     {q.options?.map((opt, i) => (
                                       <div key={i} className="flex items-center gap-5 p-4 bg-slate-50 border border-slate-100 rounded-[20px] text-[13px] text-slate-600 font-black transition-all">
                                         <div className={`w-5 h-5 border-2 border-slate-200 bg-white ${q.type === QuestionType.SINGLE ? 'rounded-full' : 'rounded-md'}`} />
-                                        {opt}
+                                        <div className="flex-1 flex items-center gap-4">
+                                          {q.optionImages?.[i] && (
+                                            <div className="w-12 h-12 rounded-lg bg-white border border-slate-200 overflow-hidden shrink-0 shadow-sm p-1">
+                                              <img src={q.optionImages[i]} className="w-full h-full object-cover rounded-md" />
+                                            </div>
+                                          )}
+                                          <span>{opt}</span>
+                                        </div>
                                       </div>
                                     ))}
                                   </div>
@@ -866,6 +882,45 @@ export const Builder: React.FC<BuilderProps> = ({ questionnaire: initialQ }) => 
                       )}
                     </div>
 
+                    {/* QUESTION STIMULUS (IMAGE) */}
+                    <div className="space-y-6 pt-8 border-t border-slate-100">
+                      <div className="flex items-center justify-between">
+                        <label className="text-[12px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                          <ImageIcon className="w-4 h-4 text-emerald-500" />
+                          Question Stimulus (Image)
+                        </label>
+                        {selectedQuestion.image && (
+                          <button 
+                            onClick={() => updateQuestion({ image: undefined })}
+                            className="text-[10px] font-black text-red-500 uppercase tracking-widest hover:underline"
+                          >
+                            Remove
+                          </button>
+                        )}
+                      </div>
+                      
+                      {selectedQuestion.image ? (
+                        <div className="p-4 bg-slate-50 border-2 border-slate-100 rounded-3xl space-y-3">
+                          <img src={selectedQuestion.image} className="w-full h-32 object-cover rounded-xl border border-slate-200" />
+                          <input 
+                            type="text" 
+                            value={selectedQuestion.image}
+                            onChange={(e) => updateQuestion({ image: e.target.value })}
+                            className="w-full px-4 py-2 bg-white border border-slate-200 rounded-lg text-xs font-mono"
+                            placeholder="Image URL..."
+                          />
+                        </div>
+                      ) : (
+                        <button 
+                          onClick={() => updateQuestion({ image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400&q=80' })}
+                          className="w-full py-6 border-2 border-dashed border-slate-200 rounded-3xl flex flex-col items-center justify-center gap-2 text-slate-400 hover:text-emerald-600 hover:border-emerald-300 hover:bg-emerald-50 transition-all"
+                        >
+                          <Upload className="w-5 h-5" />
+                          <span className="text-[10px] font-black uppercase tracking-widest">Attach Stimulus Asset</span>
+                        </button>
+                      )}
+                    </div>
+
                     {/* EDITABLE OPTIONS SECTION */}
                     {(selectedQuestion.options) && (
                       <div className="space-y-6 pt-8 border-t border-slate-100">
@@ -881,29 +936,62 @@ export const Builder: React.FC<BuilderProps> = ({ questionnaire: initialQ }) => 
                         
                         <div className="space-y-2">
                           {selectedQuestion.options.map((opt, i) => (
-                            <div key={i} className="flex items-center gap-3 group/opt animate-in fade-in duration-200">
-                              <GripVertical className="w-4 h-4 text-slate-300 cursor-grab" />
-                              <div className="flex-1 relative">
-                                <input 
-                                  type="text" 
-                                  value={opt}
-                                  onChange={(e) => {
-                                    const newOpts = [...(selectedQuestion.options || [])];
-                                    newOpts[i] = e.target.value;
-                                    updateQuestion({ options: newOpts });
-                                  }}
-                                  className="w-full px-4 py-2.5 bg-slate-50 border-2 border-slate-100 rounded-xl text-sm font-bold text-slate-700 outline-none focus:border-blue-500 focus:bg-white transition-all shadow-inner"
-                                />
+                            <div key={i} className="flex flex-col gap-2 p-1 group/opt animate-in fade-in duration-200">
+                              <div className="flex items-center gap-3">
+                                <GripVertical className="w-4 h-4 text-slate-300 cursor-grab" />
+                                <div className="flex-1 relative">
+                                  <input 
+                                    type="text" 
+                                    value={opt}
+                                    onChange={(e) => {
+                                      const newOpts = [...(selectedQuestion.options || [])];
+                                      newOpts[i] = e.target.value;
+                                      updateQuestion({ options: newOpts });
+                                    }}
+                                    className="w-full px-4 py-2.5 bg-slate-50 border-2 border-slate-100 rounded-xl text-sm font-bold text-slate-700 outline-none focus:border-blue-500 focus:bg-white transition-all shadow-inner"
+                                  />
+                                </div>
+                                <div className="flex items-center gap-1 opacity-0 group-hover/opt:opacity-100 transition-opacity">
+                                  <button 
+                                    onClick={() => {
+                                      const newImg = selectedQuestion.optionImages?.[i] ? undefined : 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200&q=80';
+                                      const newImages = [...(selectedQuestion.optionImages || [])];
+                                      newImages[i] = newImg as string;
+                                      updateQuestion({ optionImages: newImages, hasOptionImages: true });
+                                    }}
+                                    className={`p-2 rounded-lg transition-all ${selectedQuestion.optionImages?.[i] ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:bg-slate-100'}`}
+                                    title="Add Image to Option"
+                                  >
+                                    <ImageIcon className="w-4 h-4" />
+                                  </button>
+                                  <button 
+                                    onClick={() => {
+                                      const newOpts = selectedQuestion.options?.filter((_, idx) => idx !== i);
+                                      const newImages = selectedQuestion.optionImages?.filter((_, idx) => idx !== i);
+                                      updateQuestion({ options: newOpts, optionImages: newImages });
+                                    }}
+                                    className="p-2 text-slate-300 hover:text-red-500 transition-colors"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                </div>
                               </div>
-                              <button 
-                                onClick={() => {
-                                  const newOpts = selectedQuestion.options?.filter((_, idx) => idx !== i);
-                                  updateQuestion({ options: newOpts });
-                                }}
-                                className="p-2 text-slate-300 hover:text-red-500 transition-colors opacity-0 group-hover/opt:opacity-100"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
+                              {selectedQuestion.optionImages?.[i] && (
+                                <div className="ml-7 flex items-center gap-3 bg-slate-50 p-2 rounded-xl border border-slate-200 animate-in slide-in-from-left-2 duration-200">
+                                  <img src={selectedQuestion.optionImages[i]} className="w-10 h-10 object-cover rounded-lg border border-slate-100" />
+                                  <input 
+                                    type="text" 
+                                    value={selectedQuestion.optionImages[i]}
+                                    onChange={(e) => {
+                                      const newImages = [...(selectedQuestion.optionImages || [])];
+                                      newImages[i] = e.target.value;
+                                      updateQuestion({ optionImages: newImages });
+                                    }}
+                                    placeholder="Image URL..."
+                                    className="flex-1 bg-white border border-slate-200 px-3 py-1 text-[10px] font-mono rounded"
+                                  />
+                                </div>
+                              )}
                             </div>
                           ))}
                           <button 
