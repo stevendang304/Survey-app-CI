@@ -11,7 +11,8 @@ import {
   Info,
   Lock,
   Workflow,
-  EyeOff
+  EyeOff,
+  Variable
 } from 'lucide-react';
 import { Question, QuestionType, LogicCondition, DisplayLogic, CarryForwardMode, BlockMode } from '../../types';
 
@@ -396,7 +397,7 @@ export const SurveyPreview: React.FC<SurveyPreviewProps> = ({ questions, onClose
                                   <div className="flex flex-wrap gap-2 mt-1">
                                     {isCarried && (
                                       <span className="text-[9px] text-indigo-500 font-bold flex items-center gap-1 uppercase tracking-widest bg-indigo-50 px-1.5 py-0.5 rounded">
-                                        <ArrowRightLeft className="w-2.5 h-2.5" /> Referenced
+                                        <Variable className="w-2.5 h-2.5" /> Referenced
                                       </span>
                                     )}
                                     {isMutuallyExclusive && !isBlocked && (

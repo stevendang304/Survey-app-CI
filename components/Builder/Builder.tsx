@@ -45,7 +45,6 @@ import {
   List,
   Code2,
   Link as LinkIcon,
-  Sparkles,
   Search,
   ChevronLeft,
   Settings,
@@ -324,7 +323,7 @@ export const Builder: React.FC<BuilderProps> = ({ questionnaire: initialQ }) => 
         const [id, type] = content.split(':');
         return (
           <span key={i} className="bg-slate-900 text-white px-2 py-0.5 rounded-md border border-slate-700 text-[10px] font-black inline-flex items-center gap-1 mx-0.5 shadow-sm select-none">
-            <Sparkles className="w-2.5 h-2.5 text-blue-400" />
+            <Variable className="w-2.5 h-2.5 text-blue-400" />
             {id} <span className="opacity-40 font-medium">/</span> <span className="text-blue-200">{type || 'VALUE'}</span>
           </span>
         );
@@ -371,10 +370,10 @@ export const Builder: React.FC<BuilderProps> = ({ questionnaire: initialQ }) => 
             <div className="p-8 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 bg-blue-600 text-white rounded-2xl flex items-center justify-center shadow-xl">
-                  <Sparkles className="w-6 h-6" />
+                  <Variable className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-black text-slate-900 uppercase tracking-widest">Piped Text Source</h3>
+                  <h3 className="text-lg font-black text-slate-900 uppercase tracking-widest">Piped Data Source</h3>
                   <p className="text-xs font-bold text-slate-400 uppercase tracking-tight">Select dynamic data to insert into wording</p>
                 </div>
               </div>
@@ -544,10 +543,6 @@ export const Builder: React.FC<BuilderProps> = ({ questionnaire: initialQ }) => 
           <div className="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200">
             <button className="p-2 rounded-lg text-slate-400 hover:bg-white hover:shadow-sm transition-all"><Undo2 className="w-4 h-4" /></button>
             <button className="p-2 rounded-lg text-slate-400 hover:bg-white hover:shadow-sm transition-all"><Redo2 className="w-4 h-4" /></button>
-          </div>
-          <div className="flex items-center gap-3 px-4 py-1.5 bg-blue-50 border border-blue-100 rounded-full">
-            <Activity className="w-4 h-4 text-blue-500" />
-            <span className="text-[11px] font-black text-blue-700 uppercase tracking-widest">AI Audit: Professional Integrity 94%</span>
           </div>
         </div>
         <div className="flex items-center gap-4">
@@ -847,10 +842,10 @@ export const Builder: React.FC<BuilderProps> = ({ questionnaire: initialQ }) => 
                         <button 
                           onClick={() => setPipedMenuState({ ...pipedMenuState, isOpen: true })}
                           className="p-2.5 bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white rounded-xl transition-all shadow-sm border border-blue-200 active:scale-90 flex items-center gap-2" 
-                          title="Insert Piped Text"
+                          title="Insert Piped Data"
                         >
-                          <Sparkles className="w-5 h-5" />
-                          <span className="text-[10px] font-black uppercase tracking-tight">Piped Text</span>
+                          <Variable className="w-5 h-5" />
+                          <span className="text-[10px] font-black uppercase tracking-tight">Piped Data</span>
                         </button>
                       </div>
 
